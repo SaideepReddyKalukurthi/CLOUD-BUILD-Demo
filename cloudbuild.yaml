@@ -1,0 +1,27 @@
+#Use bash shell
+defaults:
+      run:
+        shell: bash
+
+#Install terraform
+steps:
+  - name: hashicorp/terraform:0.12.8
+    args: ['init','-backend-config=bucket=${_BUCKET}']
+  - name: hashicorp/terraform:0.12.8
+    args: ['plan', '-out=tfplan']
+  - name: hashicorp/terraform:0.12.8
+    entrypoint: 'sh'
+    args: 
+    - '-c'
+    - | 
+        if test "$_TERRAFORM_APPLY" = "Y" 
+        then      
+          terraform apply -auto-approve tfplan
+        else
+          echo "***************************** SKIPPING APPLYING *******************************"
+          echo "Skipping terraform apply. Please review terraform plan."
+          echo "*******************************************************************************"
+        fi
+substitutions:
+  _TERRAFORM_APPLY: 'N'
+  # _BUCKET:
